@@ -1,19 +1,36 @@
 # syntax=docker/dockerfile:1
 
 # Base stage: install dependencies and copy the project source.
-FROM node:22-alpine AS base
-WORKDIR /app
+FROM node:22-bookworm-slim AS base
+
+# Build args for a non-root user to run the service
+ARG username=finch
+ARG uid=899
+ARG gid=
+
+# These ENV vars are only used at build time to create the user
+ENV USER="$username"
+ENV UID="$uid"
+ENV GID="$gid"
+
+# Create a non-root user to run the service
+RUN set -eux; \
+    groupadd -g "${GID:-$UID}" -r "$USER"; \
+    useradd -d "/srv/$USER" -u "$UID" -g "${GID:-$UID}" -r -m "$USER"
+
+WORKDIR "/srv/$USER"
 
 # Install dependencies first to leverage layer caching.
-COPY package.json package-lock.json ./
+COPY --chown="$UID:${GID:-$UID}" package.json package-lock.json ./
 RUN npm ci
 
 # Copy the rest of the frontend project.
-COPY . .
+COPY --chown="$UID:${GID:-$UID}" . .
 
-# Dev stage: run the Vite dev server.
+# Dev stage: run the Vite dev server as the non-root user.
 # VITE_* environment variables are injected at runtime (e.g. via compose
 # `environment:`) so URLs/keys can be swapped without rebuilding the image.
 FROM base AS dev
+USER "$USER"
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
