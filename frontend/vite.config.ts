@@ -17,14 +17,13 @@ export default defineConfig(({ mode }) => {
   const qserverWs = env.VITE_QSERVER_WS?.trim() || 'ws://localhost:8001/api/v1/qs-console-socket';
   const cameraWs = env.VITE_CAMERA_WS?.trim() || 'ws://localhost:8001/api/v1/camera-socket';
   const tiffWs = env.VITE_TIFF_WS?.trim() || 'ws://localhost:8002/tiff-socket';
+  const tiledTarget = env.VITE_TILED_TARGET?.trim() || 'https://tiled.nsls2.bnl.gov';
 
   return {
     define: {
-      'import.meta.env': {
-        VITE_QSERVER_REST: JSON.stringify(qserverRest),
-        VITE_QSERVER_WS: JSON.stringify(qserverWs),
-        VITE_CAMERA_WS: JSON.stringify(cameraWs),
-      },
+      'import.meta.env.VITE_QSERVER_REST': JSON.stringify(qserverRest),
+      'import.meta.env.VITE_QSERVER_WS': JSON.stringify(qserverWs),
+      'import.meta.env.VITE_CAMERA_WS': JSON.stringify(cameraWs),
     },
     plugins: [
       react(),
@@ -62,6 +61,12 @@ export default defineConfig(({ mode }) => {
           ws: true,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/tiff/, ''),
+        },
+        '/api/tiled': {
+          target: tiledTarget,
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/api\/tiled/, ''),
         },
       },
     },
