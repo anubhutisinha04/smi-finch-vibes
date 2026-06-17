@@ -42,6 +42,11 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 # Build stage: produce the static production bundle. VITE_* values are inlined
 # from .env.production at build time into dist-app/.
 FROM base AS build
+
+ARG VITE_TILED_API_URL=
+
+ENV VITE_TILED_API_URL="$VITE_TILED_API_URL"
+
 RUN npm run build:app
 
 # Prod stage: serve the static bundle with `serve`. The `-s` flag enables SPA
