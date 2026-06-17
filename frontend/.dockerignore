@@ -6,8 +6,6 @@ storybook-static
 .gitignore
 .env
 .env.*
-!.env.development
-!.env.production
 *.log
 npm-debug.log*
 .DS_Store
