@@ -19,12 +19,12 @@ RUN set -eux \
     && groupadd -g "${GID:-$UID}" -r "$USER" \
     && useradd -d "/srv/$USER" -u "$UID" -g "${GID:-$UID}" -r -m "$USER"
 
-WORKDIR "/srv/$USER"
 
 # Switch to the non-root user BEFORE copying/installing so that node_modules
 # (and Vite's node_modules/.vite cache written at runtime) are owned by the
 # runtime user, avoiding permission errors.
 USER "$USER"
+WORKDIR "/srv/$USER"
 
 # Install dependencies first to leverage layer caching.
 COPY --chown="$UID:${GID:-$UID}" package.json package-lock.json ./
@@ -66,8 +66,8 @@ RUN set -eux \
     && useradd -d "/srv/$USER" -u "$UID" -g "${GID:-$UID}" -r -m "$USER" \
     && npm install -g serve@14
 
-WORKDIR "/srv/$USER"
 USER "$USER"
+WORKDIR "/srv/$USER"
 
 # Copy only the built static assets from the build stage.
 COPY --from=build --chown="$UID:${GID:-$UID}" "/srv/$USER/dist-app" ./dist-app
